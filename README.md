@@ -17,7 +17,7 @@ A web-based cinema ticket booking platform built with **React (Frontend)** and *
 
 | Layer | Technology |
 |-------|------------|
-| Frontend | React.js / HTML / CSS |
+| Frontend | React.js, HTML, CSS |
 | Backend | PHP (XAMPP), MySQL |
 | Styling | CSS |
-| Database | phpMyAdmin / MySQL |
+| Database | phpMyAdmin, MySQL |
