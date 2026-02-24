@@ -1,0 +1,115 @@
+-- Schema for Cinema Portal
+CREATE DATABASE IF NOT EXISTS cinema_portal CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE cinema_portal;
+
+DROP TABLE IF EXISTS booking_items;
+DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS emails;
+DROP TABLE IF EXISTS shows;
+DROP TABLE IF EXISTS screens;
+DROP TABLE IF EXISTS cinemas;
+DROP TABLE IF EXISTS movies;
+DROP TABLE IF EXISTS coupons;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE movies (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  rating VARCHAR(10) NOT NULL,
+  duration_min INT NOT NULL,
+  genre VARCHAR(100) NOT NULL DEFAULT 'General',
+  subs VARCHAR(100) NOT NULL DEFAULT 'ENG',
+  release_date DATE DEFAULT NULL,
+  synopsis TEXT NOT NULL,
+  poster_path VARCHAR(255) DEFAULT NULL,
+  status ENUM('now','soon') NOT NULL DEFAULT 'now'
+) ENGINE=InnoDB;
+
+CREATE TABLE cinemas (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  suburb VARCHAR(255) NOT NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE screens (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  cinema_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  capacity INT NOT NULL,
+  FOREIGN KEY (cinema_id) REFERENCES cinemas(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE shows (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  movie_id INT NOT NULL,
+  screen_id INT NOT NULL,
+  start_at DATETIME NOT NULL,
+  base_price DECIMAL(8,2) NOT NULL,
+  seats_sold INT NOT NULL DEFAULT 0,
+  FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+  FOREIGN KEY (screen_id) REFERENCES screens(id) ON DELETE CASCADE,
+  INDEX (start_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE customers (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(150) NOT NULL,
+  phone VARCHAR(30) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+CREATE TABLE bookings (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  customer_id INT NOT NULL,
+  coupon_id INT DEFAULT NULL,
+  discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  total_tickets INT NOT NULL,
+  total_amount DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE booking_items (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  booking_id INT NOT NULL,
+  show_id INT NOT NULL,
+  tickets INT NOT NULL,
+  price_each DECIMAL(8,2) NOT NULL,
+  seat_labels TEXT DEFAULT NULL,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+  FOREIGN KEY (show_id) REFERENCES shows(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE emails (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  to_email VARCHAR(150) NOT NULL,
+  subject VARCHAR(255) NOT NULL,
+  body TEXT NOT NULL,
+  status ENUM('queued','sent','failed') NOT NULL DEFAULT 'queued',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Users for auth and roles
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role ENUM('user','admin') NOT NULL DEFAULT 'user',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- Coupons listed in Rewards; usable at checkout
+CREATE TABLE coupons (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(40) NOT NULL UNIQUE,
+  description VARCHAR(255) NOT NULL,
+  discount_type ENUM('percent','amount') NOT NULL,
+  value DECIMAL(10,2) NOT NULL,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  min_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  expires_at DATE DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;

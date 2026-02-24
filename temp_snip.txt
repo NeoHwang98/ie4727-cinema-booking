@@ -1,0 +1,19 @@
+            $screen = pick_val($s, ['screen','screen_name'], '');
+            $price  = (float) pick_val($s, ['price','ticket_price'], 0);
+            $left   = pick_val($s, ['left','remaining','seats_left','available'], null);
+            $sid    = (int) pick_val($s, ['id','show_id','showid'], 0);
+          ?>
+            <a class="time-card" href="/cinema-test/pages/details.php?id=<?= $sid ?>">
+              <div class="time-top"><?= h($timeLabel) ?></div>
+              <div class="time-sub">
+                <?php if ($screen !== ''): ?>Screen <?= h($screen) ?> • <?php endif; ?>$<?= number_format($price, 2) ?><?php if ($left !== null): ?> • Left: <?= (int)$left ?><?php endif; ?>
+              </div>
+            </a>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</div>
+
+<?php include dirname(__DIR__) . '/inc/footer.php'; ?>
